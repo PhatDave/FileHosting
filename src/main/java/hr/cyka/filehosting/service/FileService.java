@@ -12,5 +12,5 @@ public interface FileService {
     Stream<Path> getAll();
     Path getByFilename(String filename);
     Resource getByFilenameAsResource(String filename);
-    void deleteAll();
+    void deleteByFilename(String filename);
 }

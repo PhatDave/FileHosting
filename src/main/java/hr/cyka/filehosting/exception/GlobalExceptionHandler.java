@@ -1,45 +1,32 @@
 package hr.cyka.filehosting.exception;
 
-import hr.cyka.filehosting.exception.ErrorDetails;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Date;
-import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(value = IllegalStateException.class)
-    public ResponseEntity<ErrorDetails> handleIllegalStateException(IllegalStateException ex) {
-        ErrorDetails errorDetails = this.prepareErrorDetails(ex);
-        return new ResponseEntity<>(errorDetails, HttpStatus.METHOD_NOT_ALLOWED);
-    }
-
-    @ExceptionHandler(value = NoSuchElementException.class)
-    public ResponseEntity<ErrorDetails> handleNoSuchElementException(NoSuchElementException ex) {
+    @ExceptionHandler(value = IOException.class)
+    public ResponseEntity<ErrorDetails> handleIOException(IOException ex) {
         ErrorDetails errorDetails = this.prepareErrorDetails(ex);
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(value = NumberFormatException.class)
-    public ResponseEntity<ErrorDetails> handleNumberFormatException(NumberFormatException ex) {
-        ErrorDetails errorDetails = this.prepareErrorDetails(ex);
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(value = DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorDetails> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+    @ExceptionHandler(value = StorageException.class)
+    public ResponseEntity<ErrorDetails> handleStorageException(StorageException ex) {
         ErrorDetails errorDetails = this.prepareErrorDetails(ex);
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(value = IllegalArgumentException.class)
-    public ResponseEntity<ErrorDetails> handleIllegalArgumentException(IllegalArgumentException ex) {
+    @ExceptionHandler(value = MalformedURLException.class)
+    public ResponseEntity<ErrorDetails> handleMalformedURLException(MalformedURLException ex) {
         ErrorDetails errorDetails = this.prepareErrorDetails(ex);
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ErrorDetails prepareErrorDetails(Exception exception){
