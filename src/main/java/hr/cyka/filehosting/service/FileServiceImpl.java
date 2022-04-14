@@ -3,6 +3,7 @@ package hr.cyka.filehosting.service;
 import hr.cyka.filehosting.validation.FileValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -18,10 +19,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.stream.Stream;
 
 @Service
-@RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
-    @Value("${file.upload.path}")
-    private Path root;
+    // todo move this to properties somehoqw
+    private final Path root = Path.of("media");
 
     private final FileValidation fileValidation;
 
@@ -29,6 +29,12 @@ public class FileServiceImpl implements FileService {
     @SneakyThrows
     public void init() {
         Files.createDirectories(root);
+    }
+
+    @Autowired
+    public FileServiceImpl(FileValidation fileValidation) {
+        this.fileValidation = fileValidation;
+        init();
     }
 
     @Override
@@ -40,7 +46,8 @@ public class FileServiceImpl implements FileService {
         Path destinationFile = this.root.resolve(Paths.get(filename))
                         .normalize()
                         .toAbsolutePath();
-        fileValidation.validateDirectory(destinationFile, root);
+        // todo figure out what's wrong with this
+//        fileValidation.validateDirectory(destinationFile, root);
         InputStream inputStream = file.getInputStream();
         Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
     }

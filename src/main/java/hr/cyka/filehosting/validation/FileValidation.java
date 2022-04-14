@@ -15,7 +15,7 @@ public class FileValidation {
     }
 
     public void validateDirectory(Path root, Path directory) {
-        if (!directory.getParent().equals(root.toAbsolutePath())) {
+        if (!directory.equals(root.toAbsolutePath())) {
             throw new StorageException("Cannot store file outside current directory.");
         }
     }
