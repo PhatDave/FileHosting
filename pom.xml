@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>hr.cyka</groupId>
 	<artifactId>filehosting</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>filehosting</name>
 	<description>Spring boot file hosting</description>
 	<properties>

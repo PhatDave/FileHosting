@@ -1,0 +1,1 @@
+docker build -t phatphuckdave/cykafilehosting . && docker push phatphuckdave/cykafilehosting

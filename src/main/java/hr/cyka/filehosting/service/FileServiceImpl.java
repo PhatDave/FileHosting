@@ -3,6 +3,8 @@ package hr.cyka.filehosting.service;
 import hr.cyka.filehosting.validation.FileValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -22,12 +24,14 @@ import java.util.stream.Stream;
 public class FileServiceImpl implements FileService {
     // todo move this to properties somehoqw
     private final Path root = Path.of("media");
+    private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 
     private final FileValidation fileValidation;
 
     @Override
     @SneakyThrows
     public void init() {
+        logger.info("Initializing file storage");
         Files.createDirectories(root);
     }
 
@@ -40,6 +44,7 @@ public class FileServiceImpl implements FileService {
     @Override
     @SneakyThrows
     public void save(MultipartFile file) {
+        logger.info("Saving file: {}", file.getOriginalFilename());
         fileValidation.validate(file);
         String filename = file.getOriginalFilename();
         fileValidation.validateFilename(filename);
@@ -55,6 +60,7 @@ public class FileServiceImpl implements FileService {
     @Override
     @SneakyThrows
     public Stream<Path> getAll() {
+        logger.info("Getting all files");
         return Files.walk(root, 1)
                 .filter(path -> !path.equals(root))
                 .map(root::relativize);
@@ -62,12 +68,14 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public Path getByFilename(String filename) {
+        logger.info("Getting file: {}", filename);
         return root.resolve(filename);
     }
 
     @Override
     @SneakyThrows
     public Resource getByFilenameAsResource(String filename) {
+        logger.info("Getting file: {} as resource", filename);
         Path file = getByFilename(filename);
         Resource resource = new UrlResource(file.toUri());
         if (resource.exists() || resource.isReadable()) {
@@ -80,6 +88,7 @@ public class FileServiceImpl implements FileService {
     @Override
     @SneakyThrows
     public void deleteByFilename(String filename) {
+        logger.info("Deleting file: {}", filename);
         Path file = getByFilename(filename);
         Files.delete(file);
     }
