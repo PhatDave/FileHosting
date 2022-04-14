@@ -1,5 +1,6 @@
 package hr.cyka.filehosting.controller;
 
+import hr.cyka.filehosting.entity.File;
 import hr.cyka.filehosting.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -9,13 +10,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,12 +22,16 @@ public class IndexController {
     private final FileService fileService;
 
     @GetMapping
-    public String listUploadedFiles(Model model) throws IOException {
-        Stream<Path> files = fileService.getAll();
-        model.addAttribute("files", files.map(
-                        path -> MvcUriComponentsBuilder.fromMethodName(IndexController.class,
-                                "serveFile", path.getFileName().toString()).build().toUri().toString())
-                .collect(Collectors.toList()));
+    public String listUploadedFiles(Model model) {
+        List<Path> paths = fileService.getAll();
+        ArrayList<File> files = new ArrayList<>();
+        for (Path path : paths) {
+            File file = new File();
+            file.setName(path.getFileName().toString());
+            file.setPath("/files/" + path.getFileName().toString());
+            files.add(file);
+        }
+        model.addAttribute("files", files);
         return "index";
     }
 
@@ -46,6 +49,14 @@ public class IndexController {
         fileService.save(file);
         redirectAttributes.addFlashAttribute("message",
                 "You successfully uploaded " + file.getOriginalFilename() + "!");
+        return "redirect:/";
+    }
+
+    @GetMapping("/delete/{filename:.+}")
+    public String deleteFile(@PathVariable String filename, RedirectAttributes redirectAttributes) {
+        fileService.deleteByFilename(filename);
+        redirectAttributes.addFlashAttribute("message",
+                "You successfully deleted " + filename + "!");
         return "redirect:/";
     }
 }

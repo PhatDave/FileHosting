@@ -18,6 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -59,11 +61,11 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @SneakyThrows
-    public Stream<Path> getAll() {
+    public List<Path> getAll() {
         logger.info("Getting all files");
         return Files.walk(root, 1)
                 .filter(path -> !path.equals(root))
-                .map(root::relativize);
+                .map(root::relativize).collect(Collectors.toList());
     }
 
     @Override
