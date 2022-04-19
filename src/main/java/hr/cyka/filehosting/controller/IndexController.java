@@ -21,7 +21,7 @@ import java.util.List;
 public class IndexController {
     private final FileService fileService;
 
-    @GetMapping
+    @GetMapping("/files")
     public String listUploadedFiles(Model model) {
         List<Path> paths = fileService.getAll();
         ArrayList<File> files = new ArrayList<>();
@@ -49,7 +49,7 @@ public class IndexController {
         fileService.save(file);
         redirectAttributes.addFlashAttribute("message",
                 "You successfully uploaded " + file.getOriginalFilename() + "!");
-        return "redirect:/";
+        return "redirect:/files";
     }
 
     @GetMapping("/delete/{filename:.+}")
@@ -57,6 +57,6 @@ public class IndexController {
         fileService.deleteByFilename(filename);
         redirectAttributes.addFlashAttribute("message",
                 "You successfully deleted " + filename + "!");
-        return "redirect:/";
+        return "redirect:/files";
     }
 }
