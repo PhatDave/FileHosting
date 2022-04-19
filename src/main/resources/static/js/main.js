@@ -1,3 +1,11 @@
+
+<script>
+    $('#file').change(function() {
+    $('#target').submit();
+});
+</script>
+
+
 const form = document.querySelector("form"),
     fileInput = document.querySelector(".file-input"),
     progressArea = document.querySelector(".progress-area"),
