@@ -1,72 +1,108 @@
+$(document).ready(function() {
+	const pBarElement = $("#pBar");
+	const pBarText = $("#pBarText");
+	let fileInput = $("#file");
+	const pBar = pBarElement.progressbar({
+		value: 0,
+		max: 100
+	});
+	const form = $("#target");
 
-<script>
-    $('#file').change(function() {
-    $('#target').submit();
+	let progressVector = Array();
+	let timerInterval = 200;
+	let progressMaxSize = 25;
+
+	function updateProgressBar(value) {
+		pBarElement.progressbar("value", value);
+
+	}
+
+	function setProgressBarMax(max) {
+		pBarElement.progressbar("option", "max", max);
+
+	}
+
+	$('#file').change(function() {
+		uploadFile();
+
+	});
+
+	function prettyPrint(number) {
+		let GB = 1024 * 1024 * 1024
+		let MB = 1024 * 1024
+		let KB = 1024
+		if (number > GB) {
+			return (number / GB).toFixed(2) + " GB";
+		} else if (number > MB) {
+			return (number / MB).toFixed(1) + " MB";
+		} else if (number > KB) {
+			return (number / KB).toFixed(0) + " KB";
+		} else {
+			return number + " B";
+		}
+
+	}
+
+	class PerformanceTimestamp {
+		timestamp;
+		fileSize;
+
+		constructor(timestamp, fileSize) {
+			this.timestamp = timestamp;
+			this.fileSize = fileSize;
+		}
+	}
+
+	function captureCurrentTime(fileSize) {
+		while (progressVector.length > progressMaxSize) {
+			progressVector.shift();
+		}
+		progressVector.push(new PerformanceTimestamp(performance.now(), fileSize));
+
+	}
+
+	function calculateUploadSpeed() {
+		if (progressVector.length == 0) {
+			return "0 B/S";
+		}
+		let last = progressVector[progressVector.length - 1];
+		let first = progressVector[0];
+
+		let timeDiff = last.timestamp - first.timestamp;
+		let fileSizeDiff = last.fileSize - first.fileSize;
+
+		// timeDiff in ms
+		let speedFactor = 1 / (timeDiff / 1000);
+		fileSizeDiff *= speedFactor;
+		return prettyPrint(fileSizeDiff) + "/s";
+	}
+
+	function tryRemoveLastBenchmark() {
+		if (progressVector.length > 0) {
+			progressVector.shift();
+		}
+	}
+
+	setInterval(tryRemoveLastBenchmark, timerInterval);
+
+	function uploadFile() {
+		let file = fileInput[0].files[0]
+		let data = new FormData(form[0]);
+
+		let xhr = new XMLHttpRequest();
+		xhr.open("POST", "/");
+		xhr.upload.addEventListener("progress", ({loaded, total}) => {
+			let fileLoaded = prettyPrint(loaded);
+			let fileTotal = prettyPrint(total)
+			let percentage = ((loaded / total) * 100).toFixed(1);
+
+			captureCurrentTime(loaded);
+			let uploadSpeed = calculateUploadSpeed();
+			pBarText.text(`Uploading ${file.name} ${fileLoaded} / ${fileTotal} (${percentage}%) ${uploadSpeed}`);
+
+			setProgressBarMax(total);
+			updateProgressBar(loaded);
+		});
+		xhr.send(data);
+	}
 });
-</script>
-
-
-const form = document.querySelector("form"),
-    fileInput = document.querySelector(".file-input"),
-    progressArea = document.querySelector(".progress-area"),
-    uploadedArea = document.querySelector(".uploaded-area");
-
-form.addEventListener("click", () => {
-    fileInput.click();
-});
-
-fileInput.onchange = ({target}) => {
-    let file = target.files[0];
-    if (file) {
-        let fileName = file.name;
-        if (fileName.length >= 12) {
-            let splitName = fileName.split('.');
-            fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
-        }
-        uploadFile(fileName);
-    }
-}
-
-function uploadFile(name) {
-    console.log("uploading file");
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/");
-    xhr.upload.addEventListener("progress", ({loaded, total}) => {
-        console.log("progress", loaded, total);
-        let fileLoaded = Math.floor((loaded / total) * 100);
-        let fileTotal = Math.floor(total / 1000);
-        let fileSize;
-        (fileTotal < 1024) ? fileSize = fileTotal + " KB" : fileSize = (loaded / (1024 * 1024)).toFixed(2) + " MB";
-        let progressHTML = `<li class="row">
-                          <i class="fas fa-file-alt"></i>
-                          <div class="content">
-                            <div class="details">
-                              <span class="name">${name} • Uploading</span>
-                              <span class="percent">${fileLoaded}%</span>
-                            </div>
-                            <div class="progress-bar">
-                              <div class="progress" style="width: ${fileLoaded}%"></div>
-                            </div>
-                          </div>
-                        </li>`;
-        uploadedArea.classList.add("onprogress");
-        progressArea.innerHTML = progressHTML;
-        if (loaded == total) {
-            progressArea.innerHTML = "";
-            let uploadedHTML = `<li class="row">
-                            <div class="content upload">
-                              <i class="fas fa-file-alt"></i>
-                              <div class="details">
-                                <span class="name">${name} • Uploaded</span>
-                                <span class="size">${fileSize}</span>
-                              </div>
-                            </div>
-                            <i class="fas fa-check"></i>
-                          </li>`;
-            uploadedArea.classList.remove("onprogress");
-            uploadedArea.insertAdjacentHTML("afterbegin", uploadedHTML);
-        }
-    });
-    let data = new FormData(form);
-    xhr.send(data);
-}
