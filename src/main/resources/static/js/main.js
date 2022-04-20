@@ -8,7 +8,9 @@ $(document).ready(function() {
 	});
 	const form = $("#target");
 
+	// todo fix this, this is fine but also use a vector for speeds and store a few of them like 5 or so idk
 	let progressVector = Array();
+	let uploadSpeedVector = Array();
 	let timerInterval = 200;
 	let progressMaxSize = 25;
 
@@ -58,7 +60,13 @@ $(document).ready(function() {
 			progressVector.shift();
 		}
 		progressVector.push(new PerformanceTimestamp(performance.now(), fileSize));
+	}
 
+	function pushUploadSpeed(speed) {
+		while (uploadSpeedVector.length > progressMaxSize) {
+			uploadSpeedVector.shift();
+		}
+		uploadSpeedVector.push(speed);
 	}
 
 	function calculateUploadSpeed() {
@@ -74,7 +82,18 @@ $(document).ready(function() {
 		// timeDiff in ms
 		let speedFactor = 1 / (timeDiff / 1000);
 		fileSizeDiff *= speedFactor;
-		return prettyPrint(fileSizeDiff) + "/s";
+
+		pushUploadSpeed(fileSizeDiff);
+
+		return prettyPrint(getAverageUploadSpeed()) + "/s";
+	}
+
+	function getAverageUploadSpeed() {
+		let sum = 0;
+		for (let i = 0; i < uploadSpeedVector.length; i++) {
+			sum += uploadSpeedVector[i];
+		}
+		return sum / uploadSpeedVector.length;
 	}
 
 	function tryRemoveLastBenchmark() {
@@ -102,6 +121,10 @@ $(document).ready(function() {
 
 			setProgressBarMax(total);
 			updateProgressBar(loaded);
+		});
+		xhr.upload.addEventListener("load", () => {
+			pBarText.text("Upload complete");
+			window.location.replace("http://178.128.141.50:8081/files");
 		});
 		xhr.send(data);
 	}
