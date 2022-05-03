@@ -1,11 +1,9 @@
 package hr.cyka.filehosting.controller;
 
-import hr.cyka.filehosting.entity.File;
 import hr.cyka.filehosting.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -24,15 +20,6 @@ public class IndexController {
 
     @GetMapping("/files")
     public String listUploadedFiles(Model model) {
-        List<Path> paths = fileService.getAll();
-        ArrayList<File> files = new ArrayList<>();
-        for (Path path : paths) {
-            File file = new File();
-            file.setName(path.getFileName().toString());
-            file.setPath("/files/" + path.getFileName().toString());
-            files.add(file);
-        }
-        model.addAttribute("files", files);
         return "index";
     }
 

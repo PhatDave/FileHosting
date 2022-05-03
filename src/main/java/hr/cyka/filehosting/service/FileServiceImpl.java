@@ -1,12 +1,11 @@
 package hr.cyka.filehosting.service;
 
+import hr.cyka.filehosting.entity.File;
 import hr.cyka.filehosting.validation.FileValidation;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -18,9 +17,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -62,10 +61,27 @@ public class FileServiceImpl implements FileService {
     @Override
     @SneakyThrows
     public List<Path> getAll() {
-        logger.info("Getting all files");
+        logger.info("Getting all files as paths");
         return Files.walk(root, 1)
                 .filter(path -> !path.equals(root))
                 .map(root::relativize).collect(Collectors.toList());
+    }
+
+    @Override
+    @SneakyThrows
+    public List<File> getAllFiles() {
+        logger.info("Getting all files");
+        List<Path> filePaths = getAll();
+        ArrayList<File> files = new ArrayList<>();
+
+        for (Path path : filePaths) {
+            File file = new File();
+            file.setPath(path);
+            file.setName(path.getFileName().toString());
+            files.add(file);
+        }
+
+        return files;
     }
 
     @Override
