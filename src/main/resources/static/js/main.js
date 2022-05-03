@@ -8,7 +8,55 @@ $(document).ready(function() {
 	});
 	const form = $("#target");
 
-	// todo fix this, this is fine but also use a vector for speeds and store a few of them like 5 or so idk
+
+	let dataTableDOM = $('#datatable');
+	let dataTable = dataTableDOM.DataTable({
+		ajax: {
+			url: '/api/files/',
+			dataSrc: '',
+		},
+		columns: [
+			{data: "name"},
+			{
+				data: null,
+				className: "dt-center text-center py-2 editor-download",
+				defaultContent: '<i class="fa-solid fa-download"></i>',
+				orderable: false
+			},
+			{
+				data: null,
+				className: "dt-center text-center py-2 editor-delete",
+				defaultContent: '<i class="fa fa-trash"/>',
+				orderable: false
+			},
+		],
+	});
+
+	dataTableDOM.on('click', 'td.editor-delete', function(e) {
+		e.preventDefault();
+
+		let row = dataTable.row($(this).closest('tr'));
+		let fileName = row.data().name;
+
+		$.ajax({
+			url: "/api/files/" + fileName,
+			type: "DELETE",
+			success: function() {
+				row.remove().draw();
+			}
+		})
+	});
+
+	dataTableDOM.on('click', 'td.editor-download', function(e) {
+		e.preventDefault();
+
+		let row = dataTable.row($(this).closest('tr'));
+		let fileName = row.data().name;
+
+		window.location.href = "/files/" + fileName;
+	});
+
+
 	let progressVector = Array();
 	let uploadSpeedVector = Array();
 	let timerInterval = 200;
@@ -122,7 +170,8 @@ $(document).ready(function() {
 		});
 		xhr.upload.addEventListener("load", () => {
 			pBarText.text("Upload complete");
-			// window.location.replace("http://178.128.141.50:8081/files");
+			console.log("Reload?");
+			dataTable.ajax.reload();
 		});
 		xhr.send(data);
 	}
