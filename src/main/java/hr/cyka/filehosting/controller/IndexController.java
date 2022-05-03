@@ -5,6 +5,7 @@ import hr.cyka.filehosting.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,12 +45,11 @@ public class IndexController {
     }
 
     @PostMapping
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
-                                   RedirectAttributes redirectAttributes) {
-        fileService.save(file);
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
-        return "redirect:/files";
+    public ResponseEntity<?> handleFileUpload(@RequestParam("file") List<MultipartFile> file) {
+        for (MultipartFile f : file) {
+            fileService.save(f);
+        }
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/delete/{filename:.+}")

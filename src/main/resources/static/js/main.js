@@ -105,9 +105,7 @@ $(document).ready(function() {
 	setInterval(tryRemoveLastBenchmark, timerInterval);
 
 	function uploadFile() {
-		let file = fileInput[0].files[0]
 		let data = new FormData(form[0]);
-
 		let xhr = new XMLHttpRequest();
 		xhr.open("POST", "/");
 		xhr.upload.addEventListener("progress", ({loaded, total}) => {
@@ -117,14 +115,14 @@ $(document).ready(function() {
 
 			captureCurrentTime(loaded);
 			let uploadSpeed = calculateUploadSpeed();
-			pBarText.text(`Uploading ${file.name} ${fileLoaded} / ${fileTotal} (${percentage}%) ${uploadSpeed}`);
+			pBarText.text(`Uploading file ${fileLoaded} / ${fileTotal} (${percentage}%) ${uploadSpeed}`);
 
 			setProgressBarMax(total);
 			updateProgressBar(loaded);
 		});
 		xhr.upload.addEventListener("load", () => {
 			pBarText.text("Upload complete");
-			window.location.replace("http://178.128.141.50:8081/files");
+			// window.location.replace("http://178.128.141.50:8081/files");
 		});
 		xhr.send(data);
 	}
